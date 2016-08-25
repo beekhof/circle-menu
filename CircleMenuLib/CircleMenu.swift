@@ -89,6 +89,10 @@ public class CircleMenu: UIButton {
   @IBInspectable public var distance: Float   = 100
   /// Delay between show buttons
   @IBInspectable public var showDelay: Double = 0 
+  /// Radius over which to distribute items
+  @IBInspectable public var radius: Float = 360.0
+  /// Offset degrees at which to place the first item
+  @IBInspectable public var offset: Float = 0.0
   
   /// The object that acts as the delegate of the circle menu.
   @IBOutlet weak public var delegate: AnyObject? //CircleMenuDelegate?
@@ -190,10 +194,13 @@ public class CircleMenu: UIButton {
   private func createButtons() -> [UIButton] {
     var buttons = [UIButton]()
     
-    let step: Float = 360.0 / Float(self.buttonsCount)
+    var step: Float = self.radius / Float(self.buttonsCount)
+    if (self.radius < 360.0) {
+        step = self.radius / Float(self.buttonsCount - 1)
+    }
     for index in 0..<self.buttonsCount {
       
-      let angle: Float = Float(index) * step
+      let angle: Float = Float(index) * step + self.offset
       let distance = Float(self.bounds.size.height/2.0)
       let button = Init(CircleMenuButton(size: self.bounds.size, circleMenu: self, distance:distance, angle: angle)) {
           $0.tag = index
@@ -295,11 +302,13 @@ public class CircleMenu: UIButton {
     guard let buttons = self.buttons else {
       return
     }
-    
-    let step: Float = 360.0 / Float(self.buttonsCount)
+    var step: Float = self.radius / Float(self.buttonsCount)
+    if (self.radius < 360.0) {
+        step = self.radius / Float(self.buttonsCount - 1)
+    }
     for index in 0..<self.buttonsCount {
       guard case let button as CircleMenuButton = buttons[index] else { continue }
-      let angle: Float = Float(index) * step
+      let angle: Float = Float(index) * step + self.offset
       if isShow == true {
         delegate?.circleMenu?(self, willDisplay: button, atIndex: index)
         
